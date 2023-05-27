@@ -16,6 +16,17 @@ class Day(name:String, date:String, lessons: ArrayList<Lesson>) {
         get(){return _date}
         set(value){_date = value}
     var lessons : ArrayList<Lesson> = lessons
+    var position : Int = 0
+    lateinit var lessonsViewAdapter : DayAdapter
+    fun AddLesson(name: String, group:String, time: String, room: String) : Lesson {
+        val lesson = Lesson(name, group, time, room)
+        lessons.add(lesson)
+        lessons.sortBy { it.time }
+        for (i in 0 until lessons.size) {
+            lessons[i].position = i
+        }
+        return lesson
+    }
 }
 
 class DayAdapter(private val lessonList:ArrayList<Lesson>) : RecyclerView.Adapter<LessonHolder>() {
@@ -26,10 +37,15 @@ class DayAdapter(private val lessonList:ArrayList<Lesson>) : RecyclerView.Adapte
     }
     override fun onBindViewHolder(holder: LessonHolder, position: Int) {
         val lesson = lessonList[position]
+        lesson.position = position
         holder.lessonName.text = lesson.name
         holder.lessonTime.text = lesson.time
         holder.lessonGroup.text = lesson.group
         holder.lessonRoom.text = lesson.room
+
+        for (i in position until lessonList.size){
+            lessonList[i].position += 1
+        }
     }
     override fun getItemCount(): Int {
         return lessonList.size

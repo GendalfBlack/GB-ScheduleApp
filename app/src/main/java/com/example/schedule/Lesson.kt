@@ -21,6 +21,7 @@ class Lesson(name:String, group:String, time:String, room:String) {
     var room : String
         get(){return _room}
         set(value){_room = value}
+    var position : Int = 0
 }
 
 class LessonHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
