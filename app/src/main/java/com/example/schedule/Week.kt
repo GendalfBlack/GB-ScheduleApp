@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -38,30 +39,27 @@ class Week(days : ArrayList<Day>) {
     }
 
     fun CreateJson() : String{
-        var newJSON = ""
-        newJSON += "{"
-        newJSON += "\"week\":["
-        for (day in week.days){
-            newJSON += "{"
-            newJSON += "\"name\": \"" + day.name + "\","
-            newJSON += "\"date\": \"" + day.date + "\","
-            newJSON += "\"lessons\":["
-            for(lesson in day.lessons){
-                newJSON += "{"
-                newJSON += "\"name\": \"" + lesson.name + "\","
-                newJSON += "\"group\": \"" + lesson.group + "\","
-                newJSON += "\"time\": \"" + lesson.time + "\","
-                newJSON += "\"room\": \"" + lesson.room + "\""
-                newJSON += "},"
+        val jsonObject = JSONObject()
+        val weekObject = JSONObject()
+        val daysArray = JSONArray()
+        for (day in week.days) {
+            val dayObject = JSONObject()
+            dayObject.put("name", day.name)
+            dayObject.put("date", day.date)
+            val lessonsArray = JSONArray()
+            for (lesson in day.lessons) {
+                val lessonObject = JSONObject()
+                lessonObject.put("name", lesson.name)
+                lessonObject.put("group", lesson.group)
+                lessonObject.put("time", lesson.time)
+                lessonObject.put("room", lesson.room)
+                lessonsArray.put(lessonObject)
             }
-            newJSON.dropLast(1)
-            newJSON += "]"
-            newJSON += "},"
-        }
-        newJSON.dropLast(1)
-        newJSON += "]"
-        newJSON += "}"
-        return newJSON
+            dayObject.put("lessons", lessonsArray)
+            daysArray.put(dayObject) }
+        weekObject.put("days", daysArray)
+        jsonObject.put("week", weekObject)
+        return jsonObject.toString()
     }
 
     fun AddDay(name: String, date: String) : Day {
