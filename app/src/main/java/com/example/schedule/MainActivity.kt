@@ -23,10 +23,9 @@ class MainActivity : AppCompatActivity() {
 
         week = Week(ArrayList())
 
-
         var file = File(applicationContext.filesDir, "base.json")
         if (file.exists()){
-            week.ParseJson( file.readText())
+            week.ParseJson(file.readText())
         }else{
             file = File(applicationContext.filesDir, "base.json")
             file.writeText(week.CreateJson())
@@ -64,13 +63,13 @@ class MainActivity : AppCompatActivity() {
             val timeView : TextView = findViewById(R.id.editTextTime)
             val day = week.days.find { it.date == dateView.text.toString() }
             if (day != null){
-                day.AddLesson(
+                val newLesson = day.AddLesson(
                         nameView.text.toString(),
                         groupView.text.toString(),
                         timeView.text.toString(),
                         roomView.text.toString()
                     )
-                day.lessonsViewAdapter.notifyItemInserted(day.position)
+                day.lessonsViewAdapter.notifyItemInserted(newLesson.position)
             }else{
                 val newDay = week.AddDay("text", dateView.text.toString())
                 newDay.AddLesson(
