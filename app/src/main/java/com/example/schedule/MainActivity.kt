@@ -3,6 +3,7 @@ package com.example.schedule
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -16,6 +17,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.ArrayList
+import java.util.Locale
 
 
 lateinit var week: Week
@@ -28,7 +33,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        week = Week(ArrayList())
+        week = Week()
+
+        val weekView : RecyclerView = findViewById(R.id.weekDays)
+        week.daysViewAdapter = WeekAdapter(week)
+        weekView.adapter = week.daysViewAdapter
+        weekView.layoutManager = layoutManager
 
         var file = File(applicationContext.filesDir, "base.json")
         if (file.exists()){
@@ -37,13 +47,6 @@ class MainActivity : AppCompatActivity() {
             file = File(applicationContext.filesDir, "base.json")
             file.writeText(week.createJson())
         }
-
-        val adapter = WeekAdapter(week)
-        val weekView : RecyclerView = findViewById(R.id.weekDays)
-        weekView.adapter = adapter
-        weekView.layoutManager = layoutManager
-
-        adapter.notifyItemInserted(week.days.lastIndex)
 
         val fabOpen : FloatingActionButton = findViewById(R.id.fabOpenAdd)
         val bCancel : Button = findViewById(R.id.buttonCancel)
@@ -63,14 +66,19 @@ class MainActivity : AppCompatActivity() {
         }
         val dateView : TextView = findViewById(R.id.editTextDate)
         var pickedDate = ""
-        dateView.setOnTouchListener { v, event ->
+        var pickedDateDayName = ""
+        dateView.setOnTouchListener { _, event ->
             if (event?.action == MotionEvent.ACTION_UP) {
                 val localDate = LocalDate.now()
                 val datePickerDialog = DatePickerDialog(
                 this, { _, year, monthOfYear, dayOfMonth ->
-                    pickedDate = "%02d".format(dayOfMonth)+".%02d".format(monthOfYear)+".$year"
+                    pickedDate = "%02d".format(dayOfMonth)+".%02d".format(monthOfYear+1)+".$year"
+                    pickedDateDayName = LocalDate.parse(pickedDate,
+                        DateTimeFormatter.ofPattern("dd.MM.yyyy")).dayOfWeek.getDisplayName(
+                        TextStyle.FULL, Locale.getDefault()).replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()}
                     dateView.text = pickedDate
-                }, localDate.year,localDate.monthValue,localDate.dayOfMonth )
+                }, localDate.year,localDate.monthValue-1,localDate.dayOfMonth )
                 datePickerDialog.show()
                 return@setOnTouchListener true
             }
@@ -79,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         val timeView : TextView = findViewById(R.id.editTextTime)
         var pickedTime = ""
-        timeView.setOnTouchListener { v, event ->
+        timeView.setOnTouchListener { _, event ->
             if (event?.action == MotionEvent.ACTION_UP){
                 val localTime = LocalTime.now()
                 val timePickerDialog = TimePickerDialog(
@@ -92,6 +100,7 @@ class MainActivity : AppCompatActivity() {
             }
             return@setOnTouchListener false
         }
+
         bAdd.setOnClickListener {
             val nameView : TextView = findViewById(R.id.editTextName)
             val groupView : TextView = findViewById(R.id.editTextGroup)
@@ -105,15 +114,17 @@ class MainActivity : AppCompatActivity() {
                         roomView.text.toString()
                     )
                 day.lessonsViewAdapter.notifyItemInserted(newLesson.position)
+                day.updateDay = { if (week.days.size > 0) week.updateDay(day) }
             }else{
-                val newDay = week.addDay("text", pickedDate)
+                val newDay = week.addDay(pickedDateDayName, pickedDate)
                 newDay.addLesson(
                         nameView.text.toString(),
                         groupView.text.toString(),
                         pickedTime,
                         roomView.text.toString()
                     )
-                adapter.notifyItemInserted(newDay.position)
+                week.daysViewAdapter.notifyItemInserted(newDay.position)
+                newDay.updateDay = { if (week.days.size > 0) week.updateDay(newDay) }
             }
             mainView.visibility = View.VISIBLE
             addView.visibility = View.GONE

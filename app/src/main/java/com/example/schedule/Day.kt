@@ -3,17 +3,16 @@ package com.example.schedule
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 
 typealias update_delegate = () -> Unit
-class Day(name:String, date:String, var lessons: ArrayList<Lesson>) : Fragment() {
-    public lateinit var updateDays : update_delegate
+class Day(name:String, date:String) : Fragment() {
+    lateinit var updateDay : update_delegate
     var position : Int = 0
     lateinit var lessonsViewAdapter : DayAdapter
+    var lessons: ArrayList<Lesson> = ArrayList()
 
     private var _name : String = name
     var name : String
@@ -42,14 +41,14 @@ class Day(name:String, date:String, var lessons: ArrayList<Lesson>) : Fragment()
         sort()
         lessonsViewAdapter.notifyItemRemoved(holder.adapterPosition)
         lessonsViewAdapter.notifyItemRangeChanged(holder.adapterPosition, lessons.size)
-        updateDays()
+        updateDay()
     }
 }
 
 typealias button_updates = (state : Int) -> Unit
 
 class DayAdapter(private val day: Day) : RecyclerView.Adapter<LessonHolder>() {
-    private val update_event : ArrayList<button_updates> = ArrayList()
+    private val updateEvent : ArrayList<button_updates> = ArrayList()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LessonHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.lesson, parent, false)
@@ -62,13 +61,13 @@ class DayAdapter(private val day: Day) : RecyclerView.Adapter<LessonHolder>() {
         holder.lessonRoom.text = day.lessons[position].room
         holder.lessonRemove.setOnClickListener {
             day.removeLesson(holder)
-            day.updateDays()
+            day.updateDay()
         }
         if(holder.lessonRemove.visibility == View.VISIBLE){
             holder.lessonRemove.visibility = View.GONE
             holder.lessonRemove.width = 0
         }
-        update_event.add {state : Int ->
+        updateEvent.add { state : Int ->
             if(holder.lessonRemove.visibility != View.VISIBLE && state == 1)
             { holder.lessonRemove.visibility = View.VISIBLE
               holder.lessonRemove.width = 150
@@ -77,9 +76,9 @@ class DayAdapter(private val day: Day) : RecyclerView.Adapter<LessonHolder>() {
                   holder.lessonRemove.width = 0}
         }
         holder.lessonView.setOnClickListener {
-            for(i in 0 until update_event.size) {
-                if(i == position){update_event[i](1)}
-                else{ update_event[i](0) }
+            for(i in 0 until updateEvent.size) {
+                if(i == position){updateEvent[i](1)}
+                else{ updateEvent[i](0) }
             }
         }
     }
