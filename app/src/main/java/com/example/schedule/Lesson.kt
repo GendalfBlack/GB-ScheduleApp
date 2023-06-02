@@ -34,4 +34,5 @@ class LessonHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
     val lessonTime : TextView = itemView.findViewById(R.id.lessonTimeTextView)
     val lessonRoom : TextView = itemView.findViewById(R.id.lessonRoomTextView)
     val lessonRemove : Button = itemView.findViewById(R.id.buttonRemove)
+    val lessonView : ConstraintLayout = itemView.findViewById(R.id.constraintLayout)
 }

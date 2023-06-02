@@ -6,13 +6,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 
-class Week(days : ArrayList<Day>) : Fragment(R.layout.activity_main) {
-    var days : ArrayList<Day> = days
-
-    fun ParseJson(file: String){
+class Week(var days: ArrayList<Day>) : Fragment(R.layout.activity_main) {
+    lateinit var daysViewAdapter : WeekAdapter
+    fun parseJson(file: String){
         val obj = JSONObject(file)
         val week = obj.getJSONObject("week")
         val days =  week.getJSONArray("days")
@@ -39,8 +37,7 @@ class Week(days : ArrayList<Day>) : Fragment(R.layout.activity_main) {
             this.days.add(dayClass)
         }
     }
-
-    fun CreateJson() : String{
+    fun createJson() : String{
         val jsonObject = JSONObject()
         val weekObject = JSONObject()
         val daysArray = JSONArray()
@@ -64,19 +61,30 @@ class Week(days : ArrayList<Day>) : Fragment(R.layout.activity_main) {
         return jsonObject.toString()
     }
 
-    fun AddDay(name: String, date: String) : Day {
-        val day = Day(name, date, ArrayList())
-        days.add(day)
+    private fun sort(){
         days.sortBy { it.date }
-        for (i in 0 until days.size) {
+        for (i in 0 until days.size){
             days[i].position = i
         }
+    }
+
+    fun addDay(name: String, date: String) : Day {
+        val day = Day(name, date, ArrayList())
+        days.add(day)
+        sort()
         return day
     }
+    private fun removeDay(holder : DayHolder){
+        days.removeAt(holder.adapterPosition)
+        sort()
+        daysViewAdapter.notifyItemRemoved(holder.adapterPosition)
+        daysViewAdapter.notifyItemRangeChanged(holder.adapterPosition, days.size)
+    }
+    fun updateDay(holder : DayHolder){ if(days.size == 0){ removeDay(holder) } }
 }
 
-class WeekAdapter(private val daysList:ArrayList<Day>) : RecyclerView.Adapter<DayHolder>() {
-    lateinit var parent : ViewGroup
+class WeekAdapter(private val week: Week) : RecyclerView.Adapter<DayHolder>() {
+    private lateinit var parent : ViewGroup
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayHolder {
         this.parent = parent
         val view = LayoutInflater.from(parent.context)
@@ -84,21 +92,17 @@ class WeekAdapter(private val daysList:ArrayList<Day>) : RecyclerView.Adapter<Da
         return DayHolder(view)
     }
     override fun onBindViewHolder(holder: DayHolder, position: Int) {
-        val day = daysList[position]
-        day.position = position
-        holder.dayName.text = day.name
-        holder.dayDate.text = day.date
+        holder.dayName.text = week.days[position].name
+        holder.dayDate.text = week.days[position].date
 
-        day.lessonsViewAdapter = DayAdapter(day)
-        holder.dayLessons.adapter = day.lessonsViewAdapter
+        week.days[position].lessonsViewAdapter = DayAdapter(week.days[position])
+        holder.dayLessons.adapter = week.days[position].lessonsViewAdapter
         holder.dayLessons.layoutManager = LinearLayoutManager(parent.context)
 
-        day.lessonsViewAdapter.notifyItemInserted(week.days[position].lessons.lastIndex)
-        for (i in position+1 until week.days.size){
-            week.days[i].position += 1
-        }
+        week.days[position].lessonsViewAdapter.notifyItemInserted(week.days[position].lessons.lastIndex)
+        week.days[position].updateDays = {week.updateDay(holder)}
     }
     override fun getItemCount(): Int {
-        return daysList.size
+        return week.days.size
     }
 }
