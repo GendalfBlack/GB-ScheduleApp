@@ -9,4 +9,4 @@ This is a schedule app currently in development. It allows users to manage lesso
   
 ## Preview
 Raw state with basic functionality that exist at a moment:
-![App Screenshot](Screenshots/Preview 1.jpg)
+![App Screenshot](GB-ScheduleApp/Screenshots/Preview 1.jpg)
