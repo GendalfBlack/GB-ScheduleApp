@@ -8,5 +8,6 @@ This is a schedule app currently in development. It allows users to manage lesso
 - RecyclerView elements
   
 ## Preview
-Raw state with basic functionality that exist at a moment:
-![App Screenshot](GB-ScheduleApp/Screenshots/Preview 1.jpg)
+Raw state with basic functionality that exist at a moment
+
+![AppScreenshot](Screenshots/Preview1.jpg)
