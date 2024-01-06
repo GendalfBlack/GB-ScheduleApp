@@ -1,4 +1,4 @@
-# [GB-ScheduleApp]
+# GB-ScheduleApp
 
 ## Description
 This is a schedule app currently in development. It allows users to manage lessons by adding new ones, navigating through days using swipe gestures, and viewing existing lessons. This project serves as a learning experience for exploring key Kotlin features and app development concepts, including:
